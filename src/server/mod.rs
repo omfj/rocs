@@ -1,3 +1,5 @@
+mod error;
+
 use std::{
     io::ErrorKind,
     net::SocketAddr,
@@ -8,14 +10,13 @@ use anyhow::Result;
 use axum::{
     Router,
     extract::{Path as UrlPath, State},
-    http::{StatusCode, header},
+    http::header,
     response::sse::{Event, KeepAlive, Sse},
-    response::{Html, IntoResponse, Response},
+    response::{Html, IntoResponse},
     routing::get,
 };
 use futures::stream;
 use pulldown_cmark::{Options, Parser as MarkdownParser, html};
-use thiserror::Error;
 use tokio::sync::broadcast;
 use tower::ServiceBuilder;
 use tower_http::{services::ServeDir, trace::TraceLayer};
@@ -34,43 +35,28 @@ struct AppState {
     reloads: Option<broadcast::Sender<()>>,
 }
 
-#[derive(Debug, Error)]
-enum PageError {
-    #[error("Page not found")]
-    NotFound,
-    #[error("Could not read page: {0}")]
-    Internal(#[from] std::io::Error),
-}
-
-impl IntoResponse for PageError {
-    fn into_response(self) -> Response {
-        let status = match self {
-            Self::NotFound => StatusCode::NOT_FOUND,
-            Self::Internal(_) => StatusCode::INTERNAL_SERVER_ERROR,
-        };
-        tracing::warn!(error = %self, %status, "page request failed");
-        (status, self.to_string()).into_response()
-    }
-}
-
-async fn index(State(state): State<AppState>) -> Result<Html<String>, PageError> {
+async fn index(State(state): State<AppState>) -> Result<Html<String>, error::PageError> {
     render_page(&state.docs, ROOT_FILE, state.reloads.is_some()).await
 }
 
 async fn page(
     State(state): State<AppState>,
     UrlPath(path): UrlPath<String>,
-) -> Result<Html<String>, PageError> {
+) -> Result<Html<String>, error::PageError> {
     render_page(&state.docs, &path, state.reloads.is_some()).await
 }
 
-async fn render_page(root: &Path, url_path: &str, watch: bool) -> Result<Html<String>, PageError> {
+async fn render_page(
+    root: &Path,
+    url_path: &str,
+    watch: bool,
+) -> Result<Html<String>, error::PageError> {
     let relative = Path::new(url_path);
     if !relative
         .components()
         .all(|part| matches!(part, Component::Normal(_)))
     {
-        return Err(PageError::NotFound);
+        return Err(error::PageError::NotFound);
     }
 
     let mut file = root.join(relative);
@@ -80,14 +66,14 @@ async fn render_page(root: &Path, url_path: &str, watch: bool) -> Result<Html<St
         file.set_extension("md");
     }
     if file.extension().is_none_or(|ext| ext != "md") {
-        return Err(PageError::NotFound);
+        return Err(error::PageError::NotFound);
     }
     let file = file.canonicalize().map_err(|err| match err.kind() {
-        ErrorKind::NotFound => PageError::NotFound,
-        _ => PageError::Internal(err),
+        ErrorKind::NotFound => error::PageError::NotFound,
+        _ => error::PageError::Internal(err),
     })?;
     if !file.starts_with(root) {
-        return Err(PageError::NotFound);
+        return Err(error::PageError::NotFound);
     }
 
     let markdown = tokio::fs::read_to_string(file).await?;
