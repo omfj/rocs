@@ -2,7 +2,6 @@
 
 ## MUSTs
 
-- Syntax highlighting
 - Quick search
   - Pre-build index?
 - Config file

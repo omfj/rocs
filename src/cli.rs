@@ -16,6 +16,10 @@ pub struct Args {
     #[arg(long)]
     pub watch: bool,
 
+    /// Syntax highlighting style
+    #[arg(long, default_value = "base16-ocean.dark")]
+    pub highlight_style: String,
+
     /// IP address to listen on
     ///
     /// Defaults to 127.0.0.1 (localhost). If you want to listen on all interfaces, use

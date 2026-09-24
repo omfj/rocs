@@ -18,3 +18,4 @@ tower = "0.5.3"
 tower-http = { version = "0.7.1", features = ["fs", "trace"] }
 tracing = "0.1.44"
 tracing-subscriber = "0.3.23"
+syntect = { version = "5.3.0", default-features = false, features = ["default-syntaxes", "default-themes", "html", "parsing", "regex-fancy"] }

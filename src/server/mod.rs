@@ -15,6 +15,7 @@ use crate::{cli::Args, watcher::FileWatcher};
 #[derive(Clone)]
 struct AppState {
     docs: PathBuf,
+    highlight_style: String,
     reloads: Option<broadcast::Sender<()>>,
 }
 
@@ -36,6 +37,7 @@ pub async fn run(args: Args) -> Result<()> {
     // Add the app state
     let app = app.with_state(AppState {
         docs,
+        highlight_style: args.highlight_style,
         reloads: watcher.as_ref().map(FileWatcher::reloads),
     });
 
