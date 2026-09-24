@@ -15,7 +15,6 @@ use axum::{
 };
 use futures::stream;
 use pulldown_cmark::{Options, Parser as MarkdownParser, html};
-use rust_embed::Embed;
 use thiserror::Error;
 use tokio::sync::broadcast;
 use tower::ServiceBuilder;
@@ -25,18 +24,15 @@ use crate::{cli::Args, watcher::FileWatcher};
 
 const ROOT_FILE: &str = "README.md";
 
-const RELOAD_HTML: &str = include_str!("../assets/fragments/reload.html");
-const PAGE_HTML: &str = include_str!("../assets/page.html");
+const RELOAD_HTML: &str = include_str!("assets/fragments/reload.html");
+const PAGE_HTML: &str = include_str!("assets/page.html");
+const STYLE_CSS: &str = include_str!("assets/style.css");
 
 #[derive(Clone)]
 struct AppState {
     docs: PathBuf,
     reloads: Option<broadcast::Sender<()>>,
 }
-
-#[derive(Embed)]
-#[folder = "assets/"]
-struct Assets;
 
 #[derive(Debug, Error)]
 enum PageError {
@@ -129,10 +125,9 @@ async fn reload_events(
 }
 
 async fn stylesheet() -> impl IntoResponse {
-    let css = Assets::get("style.css").expect("embedded stylesheet");
     (
         [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-        css.data.to_vec(),
+        STYLE_CSS,
     )
 }
 
