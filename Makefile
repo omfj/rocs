@@ -1,4 +1,4 @@
-.PHONY: help build install clean test
+.PHONY: help build install clean test check
 
 help:
 	@echo "   _ __ ___   ___ ___  "
@@ -26,3 +26,7 @@ clean:
 
 test:
 	@cargo test
+
+check:
+	@cargo clippy --all-targets --all-features -- -D warnings
+	@cargo fmt --all -- --check
