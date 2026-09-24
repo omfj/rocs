@@ -1,5 +1,6 @@
 mod cli;
 mod server;
+mod watcher;
 
 use clap::Parser;
 

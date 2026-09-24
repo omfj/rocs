@@ -8,7 +8,6 @@
 - Config file
   - but what for???
 - Install script
-- `--watch` flag
 
 ## MAYBEs
 

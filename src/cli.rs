@@ -12,6 +12,10 @@ pub struct Args {
     #[arg(default_value = "./docs")]
     pub docs: PathBuf,
 
+    /// Reload open pages when files in the docs folder change
+    #[arg(long)]
+    pub watch: bool,
+
     /// IP address to listen on
     ///
     /// Defaults to 127.0.0.1 (localhost). If you want to listen on all interfaces, use
