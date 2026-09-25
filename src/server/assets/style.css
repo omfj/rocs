@@ -27,6 +27,47 @@ pre {
   border-radius: 0.3rem;
 }
 
+.code-block {
+  position: relative;
+}
+
+.copy-code {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #8884;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.copy-code::before {
+  content: "";
+  width: 1rem;
+  height: 1rem;
+  background: currentColor;
+  mask: url("/_rocs/icons/clipboard.svg") center / contain no-repeat;
+}
+
+.copy-code.copied::before {
+  mask-image: url("/_rocs/icons/check.svg");
+}
+
+.code-block:hover .copy-code,
+.code-block:focus-within .copy-code {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .copy-code {
+    opacity: 1;
+  }
+}
+
 code {
   font-family: ui-monospace, monospace;
 }

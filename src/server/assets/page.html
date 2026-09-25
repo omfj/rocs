@@ -8,6 +8,47 @@
   </head>
   <body>
     <main>{{ content }}</main>
+    <script>
+      for (const pre of document.querySelectorAll("main pre")) {
+        const wrapper = document.createElement("div");
+        wrapper.className = "code-block";
+        pre.replaceWith(wrapper);
+        wrapper.append(pre);
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "copy-code";
+        button.title = "Code";
+        const background = window.getComputedStyle(pre).backgroundColor;
+        button.style.backgroundColor = background;
+        if (pre.style.backgroundColor) {
+          const [red, green, blue] = background.match(/\d+/g).map(Number);
+          // Use the background's perceived brightness to keep the button text readable.
+          button.style.color =
+            red * 0.299 + green * 0.587 + blue * 0.114 < 128 ? "#fff" : "#111";
+        } else {
+          button.style.color = window.getComputedStyle(pre).color;
+        }
+        wrapper.append(button);
+
+        button.addEventListener("click", async () => {
+          const code = pre.textContent;
+          try {
+            await navigator.clipboard.writeText(code);
+          } catch (error) {
+            console.error("Could not copy code block:", error);
+            return;
+          }
+          button.classList.add("copied");
+          button.title = "Copied";
+          clearTimeout(button.resetTimer);
+          button.resetTimer = setTimeout(() => {
+            button.classList.remove("copied");
+            button.title = "Copy";
+          }, 2_000);
+        });
+      }
+    </script>
     {{ watch_script }}
   </body>
 </html>

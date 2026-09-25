@@ -15,10 +15,14 @@ use tower_http::services::ServeDir;
 use super::AppState;
 
 const STYLE_CSS: &str = include_str!("assets/style.css");
+const CLIPBOARD_SVG: &str = include_str!("assets/icons/clipboard.svg");
+const CHECK_SVG: &str = include_str!("assets/icons/check.svg");
 
 pub(super) fn router(docs: &Path, watch: bool) -> Router<AppState> {
     let router = Router::new()
         .route("/style.css", get(stylesheet))
+        .route("/icons/clipboard.svg", get(clipboard_icon))
+        .route("/icons/check.svg", get(check_icon))
         .nest_service("/files", ServeDir::new(docs));
 
     if watch {
@@ -26,6 +30,21 @@ pub(super) fn router(docs: &Path, watch: bool) -> Router<AppState> {
     } else {
         router
     }
+}
+
+async fn stylesheet() -> impl IntoResponse {
+    (
+        [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
+        STYLE_CSS,
+    )
+}
+
+async fn clipboard_icon() -> impl IntoResponse {
+    ([(header::CONTENT_TYPE, "image/svg+xml")], CLIPBOARD_SVG)
+}
+
+async fn check_icon() -> impl IntoResponse {
+    ([(header::CONTENT_TYPE, "image/svg+xml")], CHECK_SVG)
 }
 
 async fn reload_events(
@@ -45,11 +64,4 @@ async fn reload_events(
         }
     });
     Sse::new(events).keep_alive(KeepAlive::default())
-}
-
-async fn stylesheet() -> impl IntoResponse {
-    (
-        [(header::CONTENT_TYPE, "text/css; charset=utf-8")],
-        STYLE_CSS,
-    )
 }
